@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const OBJECT_TOOLBAR_INDEX = 0;
-// Replace the old Effects tab with the new Wire-frames tab (index remains 1)
-export const WIREFRAMES_TOOLBAR_INDEX = 1;
-export const MORE_OPTIONS_TOOLBAR_INDEX = 2;
+import ToolbarHeaderWrapper from '@/common/components/toolbar/ToolbarHeaderWrapper';
+
+export default function WireframesToolbarHeader() {
+  return (
+    <ToolbarHeaderWrapper
+      title="wire-frames for drape data"
+      description="Tracked Object 1 will be simplified into wire-frame polygons per frame. Markers 1 & 2 define scale (120cm)."
+      className="pb-4"
+    />
+  );
+}

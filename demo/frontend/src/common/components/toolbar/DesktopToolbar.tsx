@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import ObjectsToolbar from '@/common/components/annotations/ObjectsToolbar';
-import EffectsToolbar from '@/common/components/effects/EffectsToolbar';
 import MoreOptionsToolbar from '@/common/components/options/MoreOptionsToolbar';
 import type {CSSProperties} from 'react';
+import WireframesToolbar from '@/common/components/wireframes/WireframesToolbar';
 
 type Props = {
   tabIndex: number;
@@ -31,7 +31,7 @@ export default function DesktopToolbar({tabIndex, onTabChange}: Props) {
 
   const tabs = [
     <ObjectsToolbar key="objects" onTabChange={onTabChange} />,
-    <EffectsToolbar key="effects" onTabChange={onTabChange} />,
+    <WireframesToolbar key="wireframes" onTabChange={onTabChange} />,
     <MoreOptionsToolbar key="options" onTabChange={onTabChange} />,
   ];
 

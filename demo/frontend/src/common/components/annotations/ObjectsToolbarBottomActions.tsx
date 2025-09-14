@@ -18,7 +18,7 @@ import CloseSessionButton from '@/common/components/annotations/CloseSessionButt
 import TrackAndPlayButton from '@/common/components/button/TrackAndPlayButton';
 import ToolbarBottomActionsWrapper from '@/common/components/toolbar/ToolbarBottomActionsWrapper';
 import {
-  EFFECT_TOOLBAR_INDEX,
+  WIREFRAMES_TOOLBAR_INDEX,
   OBJECT_TOOLBAR_INDEX,
 } from '@/common/components/toolbar/ToolbarConfig';
 import {streamingStateAtom} from '@/demo/atoms';
@@ -34,8 +34,8 @@ export default function ObjectsToolbarBottomActions({onTabChange}: Props) {
   const isTrackingEnabled =
     streamingState !== 'none' && streamingState !== 'full';
 
-  function handleSwitchToEffectsTab() {
-    onTabChange(EFFECT_TOOLBAR_INDEX);
+  function handleSwitchToWireframesTab() {
+    onTabChange(WIREFRAMES_TOOLBAR_INDEX);
   }
 
   return (
@@ -45,7 +45,7 @@ export default function ObjectsToolbarBottomActions({onTabChange}: Props) {
       />
       {isTrackingEnabled && <TrackAndPlayButton />}
       {streamingState === 'full' && (
-        <CloseSessionButton onSessionClose={handleSwitchToEffectsTab} />
+        <CloseSessionButton onSessionClose={handleSwitchToWireframesTab} />
       )}
     </ToolbarBottomActionsWrapper>
   );

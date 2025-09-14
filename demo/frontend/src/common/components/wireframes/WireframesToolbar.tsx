@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import MobileObjectsToolbar from '@/common/components/annotations/MobileObjectsToolbar';
-import MoreOptionsToolbar from '@/common/components/options/MoreOptionsToolbar';
-import MobileWireframesToolbar from '@/common/components/wireframes/MobileWireframesToolbar';
+import WireframesToolbarHeader from './WireframesToolbarHeader';
+import WireframesToolbarBottomActions from './WireframesToolbarBottomActions';
+import WireframesPanel from './WireframesPanel';
+
+// New "wire-frames for drape data" tab replacing the previous Effects tab
 
 type Props = {
-  tabIndex: number;
   onTabChange: (newIndex: number) => void;
 };
 
-export default function MobileToolbar({tabIndex, onTabChange}: Props) {
-  const tabs = [
-    <MobileObjectsToolbar key="objects" onTabChange={onTabChange} />,
-    <MobileWireframesToolbar key="wireframes" onTabChange={onTabChange} />,
-    <MoreOptionsToolbar key="more-options" onTabChange={onTabChange} />,
-  ];
-
+export default function WireframesToolbar({onTabChange}: Props) {
   return (
-    <div className="relative flex flex-col bg-black">{tabs[tabIndex]}</div>
+    <div className="flex flex-col h-full">
+      <WireframesToolbarHeader />
+      <div className="grow overflow-y-auto">
+        <WireframesPanel />
+      </div>
+      <WireframesToolbarBottomActions onTabChange={onTabChange} />
+    </div>
   );
 }

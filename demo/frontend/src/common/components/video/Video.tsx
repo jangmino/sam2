@@ -123,6 +123,7 @@ export type VideoRef = {
   updatePoints(trackletId: number, points: SegmentationPoint[]): void;
   clearPointsInVideo(): Promise<boolean>;
   getWorker_ONLY_USE_WITH_CAUTION(): Worker;
+  exportWireframes(scaleCm: number, epsilon: number): void;
 };
 
 export default forwardRef<VideoRef, Props>(function Video(
@@ -252,6 +253,9 @@ export default forwardRef<VideoRef, Props>(function Video(
       },
       getWorker_ONLY_USE_WITH_CAUTION() {
         return bridge.getWorker_ONLY_USE_WITH_CAUTION();
+      },
+      exportWireframes(scaleCm: number, epsilon: number) {
+        bridge.exportWireframes(scaleCm, epsilon);
       },
     }),
     [bridge],

@@ -52,7 +52,14 @@ import {
   PlayRequest,
   RenderingErrorResponse,
   VideoWorkerResponse,
+  WireframesExportedResponse,
 } from './VideoWorkerTypes';
+import {
+  centroidFromRLE,
+  distance,
+  transformTopAndScale,
+  wireframeFromRLE,
+} from '@/common/wireframes/WireframeUtils';
 
 function getEvenlySpacedItems(decodedVideo: DecodedVideo, x: number) {
   const p = Math.floor(decodedVideo.numFrames / Math.max(1, x - 1));
@@ -519,6 +526,84 @@ export default class VideoWorkerContext {
         transfer,
       },
     );
+  }
+
+  public exportWireframes(scaleCm: number, epsilon: number): void {
+    try {
+      // Need at least 3 tracklets: main object + 2 markers
+      if (this._tracklets.length < 3) {
+        this.sendResponse<WireframesExportedResponse>('wireframesExported', {
+          scaleCm,
+          pxPerCm: 0,
+          frames: [],
+        });
+        return;
+      }
+
+      const main = this._tracklets[0];
+      const marker1 = this._tracklets[1];
+      const marker2 = this._tracklets[2];
+
+      const numFrames = Math.min(
+        main.masks.length,
+        marker1.masks.length,
+        marker2.masks.length,
+      );
+      if (numFrames === 0) {
+        this.sendResponse<WireframesExportedResponse>('wireframesExported', {
+          scaleCm,
+          pxPerCm: 0,
+          frames: [],
+        });
+        return;
+      }
+
+      const m1rle = marker1.masks[0]?.data as RLEObject | undefined;
+      const m2rle = marker2.masks[0]?.data as RLEObject | undefined;
+      const p = m1rle ? centroidFromRLE(m1rle) : null;
+      const q = m2rle ? centroidFromRLE(m2rle) : null;
+      if (!p || !q) {
+        this.sendResponse<WireframesExportedResponse>('wireframesExported', {
+          scaleCm,
+          pxPerCm: 0,
+          frames: [],
+        });
+        return;
+      }
+
+      const pxDist = distance(p, q);
+      const pxPerCm = pxDist > 0 ? pxDist / scaleCm : 0;
+      const scale = pxDist > 0 ? scaleCm / pxDist : 1;
+
+      const frames: Array<{
+        frame: number;
+        polygon: Array<[number, number]>;
+      }> = [];
+      for (let i = 0; i < numFrames; i++) {
+        const mask = main.masks[i];
+        if (!mask || mask.isEmpty) {
+          continue;
+        }
+        const rle = mask.data as RLEObject;
+        const wf = wireframeFromRLE(rle, epsilon);
+        const transformed = transformTopAndScale(
+          wf.polygon,
+          wf.topmostIndex,
+          scale,
+        );
+        frames.push({frame: i, polygon: transformed});
+      }
+
+      this.sendResponse<WireframesExportedResponse>('wireframesExported', {
+        scaleCm,
+        pxPerCm,
+        frames,
+      });
+    } catch (error) {
+      this._sendRenderingError(
+        new Error('Failed to export wireframes: ' + (error as Error).message),
+      );
+    }
   }
 
   private async _decodeVideo(src: string): Promise<void> {

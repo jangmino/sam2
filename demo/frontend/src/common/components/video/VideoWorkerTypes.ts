@@ -73,6 +73,14 @@ export type EncodeVideoRequest = Request<'encode', unknown>;
 
 export type EnableStatsRequest = Request<'enableStats', unknown>;
 
+export type ExportWireframesRequest = Request<
+  'exportWireframes',
+  {
+    scaleCm: number;
+    epsilon: number;
+  }
+>;
+
 export type VideoWorkerRequest =
   | SetCanvasRequest
   | SetSourceRequest
@@ -83,7 +91,8 @@ export type VideoWorkerRequest =
   | FilmstripRequest
   | SetEffectRequest
   | EncodeVideoRequest
-  | EnableStatsRequest;
+  | EnableStatsRequest
+  | ExportWireframesRequest;
 
 export type VideoWorkerRequestMessageEvent = MessageEvent<VideoWorkerRequest>;
 
@@ -121,6 +130,20 @@ export type RenderingErrorResponse = Request<
   RenderingErrorEvent
 >;
 
+export type WireframesExportedEvent = {
+  scaleCm: number;
+  pxPerCm: number;
+  frames: Array<{
+    frame: number;
+    polygon: Array<[number, number]>;
+  }>;
+};
+
+export type WireframesExportedResponse = Request<
+  'wireframesExported',
+  WireframesExportedEvent
+>;
+
 // HTMLVideoElement events https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video#events
 
 export type LoadStartResponse = Request<'loadstart', LoadStartEvent>;
@@ -138,6 +161,7 @@ export type VideoWorkerResponse =
   | FrameUpdateResponse
   | LoadStartResponse
   | RenderingErrorResponse
-  | EffectUpdateResponse;
+  | EffectUpdateResponse
+  | WireframesExportedResponse;
 
 export type VideoWorkerResponseMessageEvent = MessageEvent<VideoWorkerResponse>;

@@ -32,6 +32,8 @@ import ReplaceGLEffect from './ReplaceGLEffect';
 import ScopeGLEffect from './ScopeGLEffect';
 import SobelEffect from './SobelEffect';
 import VibrantMaskEffect from './VibrantMaskEffect';
+import BlankBackgroundEffect from './BlankBackgroundEffect';
+import WireframeEffect from './WireframeEffect';
 
 export type Effects = {
   /* Backgrounds */
@@ -43,6 +45,7 @@ export type Effects = {
   BackgroundText: Effect;
   BackgroundBlur: Effect;
   Gradient: Effect;
+  Blank: Effect;
 
   /* Highlights */
   Overlay: Effect;
@@ -54,6 +57,7 @@ export type Effects = {
   Burst: Effect;
   PixelateMask: Effect;
   Arrow: Effect;
+  Wireframe: Effect;
 
   /* More Effects */
   NoisyMask: Effect;
@@ -69,6 +73,7 @@ export default {
   BackgroundText: new BackgroundTextEffect(),
   BackgroundBlur: new BackgroundBlurEffect(),
   Gradient: new GradientEffect(),
+  Blank: new BlankBackgroundEffect(),
 
   /* Highlights */
   Overlay: new OverlayEffect(),
@@ -80,6 +85,7 @@ export default {
   Burst: new BurstGLEffect(),
   PixelateMask: new PixelateMaskGLEffect(),
   Arrow: new ArrowGLEffect(),
+  Wireframe: new WireframeEffect(),
 
   /* More Effects */
   NoisyMask: new NoisyMaskEffect(),
@@ -130,5 +136,9 @@ export const effectPresets: EffectsCombo[] = [
   [
     {name: 'EraseBackground', variant: 0},
     {name: 'EraseForeground', variant: 0},
+  ],
+  [
+    {name: 'Blank', variant: 0},
+    {name: 'Wireframe', variant: 0},
   ],
 ];

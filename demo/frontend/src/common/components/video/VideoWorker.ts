@@ -87,6 +87,13 @@ self.addEventListener(
           break;
         }
 
+        // Wireframes export
+        case 'exportWireframes': {
+          const {scaleCm, epsilon} = event.data;
+          context.exportWireframes(scaleCm, epsilon);
+          break;
+        }
+
         // Tracker
         case 'initializeTracker': {
           const {name, options} = event.data;

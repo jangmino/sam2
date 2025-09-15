@@ -59,6 +59,8 @@ import {
   StopRequest,
   VideoWorkerRequest,
   VideoWorkerResponseMessageEvent,
+  ExportWireframesRequest,
+  WireframesExportedEvent,
 } from './VideoWorkerTypes';
 import {EffectOptions} from './effects/Effect';
 
@@ -167,6 +169,7 @@ export interface VideoWorkerEventMap {
   loadstart: LoadStartEvent;
   effectUpdate: EffectUpdateEvent;
   renderingError: RenderingErrorEvent;
+  wireframesExported: WireframesExportedEvent;
 }
 
 type Metadata = {
@@ -236,7 +239,7 @@ export default class VideoWorkerBridge extends EventEmitter<VideoWorkerEventMap>
             this._sessionId = event.data.sessionId;
             break;
         }
-        this.trigger(event.data.action, event.data);
+        this.trigger(event.data.action, event.data as any);
       },
     );
   }
@@ -325,6 +328,13 @@ export default class VideoWorkerBridge extends EventEmitter<VideoWorkerEventMap>
 
   encode(): void {
     this.sendRequest<EncodeVideoRequest>('encode');
+  }
+
+  exportWireframes(scaleCm: number, epsilon: number) {
+    this.sendRequest<ExportWireframesRequest>('exportWireframes', {
+      scaleCm,
+      epsilon,
+    });
   }
 
   initializeTracker(name: keyof Trackers, options: TrackerOptions): void {

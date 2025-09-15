@@ -2,7 +2,7 @@
  * Utilities to extract simplified wireframe polygons from RLE masks,
  * compute centroids, and transform/scale polygons.
  */
-import {RLEObject, decode} from '@/jscocotools/mask';
+import {RLEObject, decode} from '../../jscocotools/mask';
 
 export type Point = [number, number];
 
@@ -12,7 +12,11 @@ export type WireframeData = {
 };
 
 /** Decode an RLEObject into a binary mask and return width/height and data (0/1). */
-export function rleToBinaryMask(rle: RLEObject): {width: number; height: number; data: Uint8Array} {
+export function rleToBinaryMask(rle: RLEObject): {
+  width: number;
+  height: number;
+  data: Uint8Array;
+} {
   const decoded = decode([rle]);
   // decoded.shape is [h, w, n]
   const h = decoded.shape[0];
@@ -25,7 +29,7 @@ export function rleToBinaryMask(rle: RLEObject): {width: number; height: number;
 
 /** Compute centroid (x,y) in video pixel coordinates of a binary mask from its RLE. */
 export function centroidFromRLE(rle: RLEObject): Point | null {
-  const {width, height, data} = rleToBinaryMask(rle);
+  const {height, data} = rleToBinaryMask(rle);
   let sumX = 0;
   let sumY = 0;
   let count = 0;
@@ -40,18 +44,27 @@ export function centroidFromRLE(rle: RLEObject): Point | null {
       count++;
     }
   }
-  if (count === 0) return null;
+  if (count === 0) {
+    return null;
+  }
   return [sumX / count, sumY / count];
 }
 
 /** Moore-Neighbor tracing to extract an ordered boundary polygon from a binary mask. */
-export function extractContour(data: Uint8Array, width: number, height: number): Point[] {
+export function extractContour(
+  data: Uint8Array,
+  width: number,
+  height: number,
+): Point[] {
   // Build boundary set: pixels with value=1 having any 4-neighbor 0.
-  const isInside = (x: number, y: number) => x >= 0 && y >= 0 && x < width && y < height;
+  const isInside = (x: number, y: number) =>
+    x >= 0 && y >= 0 && x < width && y < height;
   const idx = (x: number, y: number) => y * width + x;
 
   const isBoundary = (x: number, y: number) => {
-    if (!isInside(x, y) || data[idx(x, y)] === 0) return false;
+    if (!isInside(x, y) || data[idx(x, y)] === 0) {
+      return false;
+    }
     return (
       (isInside(x + 1, y) ? data[idx(x + 1, y)] === 0 : true) ||
       (isInside(x - 1, y) ? data[idx(x - 1, y)] === 0 : true) ||
@@ -70,7 +83,9 @@ export function extractContour(data: Uint8Array, width: number, height: number):
       }
     }
   }
-  if (!start) return [];
+  if (!start) {
+    return [];
+  }
 
   const dirs: Point[] = [
     [1, 0],
@@ -109,7 +124,9 @@ export function extractContour(data: Uint8Array, width: number, height: number):
       // Isolated pixel? then stop.
       break;
     }
-    if (--safety <= 0) break;
+    if (--safety <= 0) {
+      break;
+    }
   } while (!(cx === start[0] && cy === start[1] && contour.length > 1));
 
   return contour;
@@ -117,7 +134,9 @@ export function extractContour(data: Uint8Array, width: number, height: number):
 
 /** Douglas-Peucker simplification */
 export function simplifyRDP(points: Point[], epsilon: number): Point[] {
-  if (points.length < 3) return points.slice();
+  if (points.length < 3) {
+    return points.slice();
+  }
 
   const dmaxInfo = findMaxDistance(points);
   const dmax = dmaxInfo.distance;
@@ -143,7 +162,9 @@ function perpendicularDistance(p: Point, a: Point, b: Point): number {
   const dot = A * C + B * D;
   const lenSq = C * C + D * D;
   let param = -1;
-  if (lenSq !== 0) param = dot / lenSq;
+  if (lenSq !== 0) {
+    param = dot / lenSq;
+  }
   let xx, yy;
   if (param < 0) {
     xx = x1;
@@ -178,7 +199,10 @@ function findMaxDistance(points: Point[]): {index: number; distance: number} {
  * Given an RLE mask, extract a simplified contour polygon in video pixel coordinates.
  * epsilon controls simplification tolerance in pixels.
  */
-export function wireframeFromRLE(rle: RLEObject, epsilon: number = 2): WireframeData {
+export function wireframeFromRLE(
+  rle: RLEObject,
+  epsilon: number = 2,
+): WireframeData {
   const {width, height, data} = rleToBinaryMask(rle);
   // Map linear indices to (x,y) in video coords as newX=floor(i/height), newY=i%height
   // Build a binary grid in video coordinates of size (width, height)
@@ -194,14 +218,21 @@ export function wireframeFromRLE(rle: RLEObject, epsilon: number = 2): Wireframe
 
   const contour = extractContour(grid, width, height);
   // Ensure closed path by appending first point at end to preserve shape for RDP
-  const closed = contour.length > 2 && (contour[0][0] !== contour[contour.length - 1][0] || contour[0][1] !== contour[contour.length - 1][1])
-    ? [...contour, contour[0]]
-    : contour.slice();
+  const closed =
+    contour.length > 2 &&
+    (contour[0][0] !== contour[contour.length - 1][0] ||
+      contour[0][1] !== contour[contour.length - 1][1])
+      ? [...contour, contour[0]]
+      : contour.slice();
 
   const simplified = simplifyRDP(closed, epsilon);
   let topIdx = 0;
   for (let i = 1; i < simplified.length; i++) {
-    if (simplified[i][1] < simplified[topIdx][1] || (simplified[i][1] === simplified[topIdx][1] && simplified[i][0] < simplified[topIdx][0])) {
+    if (
+      simplified[i][1] < simplified[topIdx][1] ||
+      (simplified[i][1] === simplified[topIdx][1] &&
+        simplified[i][0] < simplified[topIdx][0])
+    ) {
       topIdx = i;
     }
   }
@@ -209,8 +240,14 @@ export function wireframeFromRLE(rle: RLEObject, epsilon: number = 2): Wireframe
 }
 
 /** Translate so topmost point at (0,0) and scale by factor s. */
-export function transformTopAndScale(polygon: Point[], topmostIndex: number, scale: number): Point[] {
-  if (polygon.length === 0) return polygon;
+export function transformTopAndScale(
+  polygon: Point[],
+  topmostIndex: number,
+  scale: number,
+): Point[] {
+  if (polygon.length === 0) {
+    return polygon;
+  }
   const [tx, ty] = polygon[topmostIndex];
   return polygon.map(([x, y]) => [(x - tx) * scale, (y - ty) * scale]);
 }

@@ -25,6 +25,12 @@ export type EffectLayers = {
 
 export type EffectOptions = {
   variant: number;
+  // Optional parameters used by some effects (e.g., WireframeEffect)
+  epsilon?: number; // simplification tolerance in px
+  scaleCm?: number; // physical scale baseline in cm between markers
+  strokeWidth?: number;
+  strokeColor?: string;
+  fillAlpha?: number;
 };
 
 export type EffectInit = {

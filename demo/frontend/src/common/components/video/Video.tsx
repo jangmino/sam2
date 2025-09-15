@@ -169,7 +169,7 @@ export default forwardRef<VideoRef, Props>(function Video(
         return bridge.width;
       },
       get height() {
-        return bridge.width;
+        return bridge.height;
       },
       get frame() {
         return bridge.frame;

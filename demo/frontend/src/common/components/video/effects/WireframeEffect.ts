@@ -3,7 +3,7 @@
  * distance between marker1 and marker2 (Object 2 and 3) in first frame is 120cm,
  * and translated so that the topmost point sits slightly above the frame center.
  */
-import {AbstractEffect, EffectFrameContext} from './Effect';
+import {AbstractEffect, EffectFrameContext, EffectOptions} from './Effect';
 import {CanvasForm} from 'pts';
 import {RLEObject} from '@/jscocotools/mask';
 import {
@@ -17,15 +17,27 @@ export default class WireframeEffect extends AbstractEffect {
   private _scale = 1;
   private _epsilon = 2;
   private _scaleCm = 120;
+  private _strokeWidth = 2;
+  private _strokeColor = 'white';
+  private _fillAlpha = 0.08;
   private _initialized = false;
 
   constructor() {
     super(1);
   }
 
-  async update(options: {variant: number}): Promise<void> {
-    // allow changing simplification tolerance by variant if desired in future
+  async update(options: EffectOptions): Promise<void> {
     this.variant = options.variant;
+    if (options.epsilon != null) this._epsilon = options.epsilon;
+    if (options.scaleCm != null) {
+      if (options.scaleCm !== this._scaleCm) {
+        this._scaleCm = options.scaleCm;
+        this._initialized = false; // force recompute scale
+      }
+    }
+    if (options.strokeWidth != null) this._strokeWidth = options.strokeWidth;
+    if (options.strokeColor != null) this._strokeColor = options.strokeColor;
+    if (options.fillAlpha != null) this._fillAlpha = options.fillAlpha;
   }
 
   private _ensureScale(context: EffectFrameContext): void {
@@ -51,8 +63,8 @@ export default class WireframeEffect extends AbstractEffect {
   }
 
   apply(form: CanvasForm, context: EffectFrameContext): void {
-    // Compute scale once using first frame markers
-    if (context.frameIndex === 0 && !this._initialized) {
+    // Compute scale once using first frame markers or when reset
+    if (!this._initialized || context.frameIndex === 0) {
       this._ensureScale(context);
     }
 
@@ -78,11 +90,11 @@ export default class WireframeEffect extends AbstractEffect {
     }
 
     form.ctx.save();
-    form.ctx.lineWidth = 2;
-    form.ctx.strokeStyle = 'white';
-    form.ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    form.ctx.lineWidth = this._strokeWidth;
+    form.ctx.strokeStyle = this._strokeColor;
+    const alpha = Math.max(0, Math.min(1, this._fillAlpha));
+    form.ctx.fillStyle = `rgba(255,255,255,${alpha})`;
     form.ctx.stroke(path);
-    // Optional slight fill to make visible
     form.ctx.fill(path);
     form.ctx.restore();
   }
